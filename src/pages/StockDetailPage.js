@@ -1,8 +1,20 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import finnHub from '../apis/finnHub';
+import { StockChart } from '../components/StockChart';
+
+
+const fromatData = (data) => {
+    return data.t.map((el, index) => {
+        return {
+            x: el * 1000,
+            y: Math.floor(data.c[index])
+        }
+    })
+}
 
 export const StockDetailPage = () => {
+    const [chartData, setChartData] = useState();
     const { symbol } = useParams();
 
     useEffect(() => {
@@ -17,23 +29,63 @@ export const StockDetailPage = () => {
                 oneDay = currentTime - 3 * 24 * 60 * 60;
             }
             else {
-                oneDay = currentTime - 24 * 60 * 60;
+                oneDay = currentTime - 3 * 24 * 60 * 60;
             }
 
-            const response = await finnHub.get("/stock/candle", {
-                params: {
-                    symbol,
-                    from: oneDay,
-                    to: currentTime,
-                    resolution: 30
-                }
-            })
-            console.log(response)
+            const oneWeek = currentTime - 7 * 24 * 60 * 60;
+            const oneYear = currentTime - 365 * 24 * 60 * 60;
+
+            try {
+                const resposes = await Promise.all([
+                    finnHub.get("/stock/candle", {
+                        params: {
+                            symbol,
+                            from: oneDay,
+                            to: currentTime,
+                            resolution: 30
+                        }
+                    }),
+                    finnHub.get("/stock/candle", {
+                        params: {
+                            symbol,
+                            from: oneWeek,
+                            to: currentTime,
+                            resolution: 60
+                        }
+                    }),
+                    finnHub.get("/stock/candle", {
+                        params: {
+                            symbol,
+                            from: oneYear,
+                            to: currentTime,
+                            resolution: "W"
+                        }
+                    })
+                ]);
+                console.log(resposes);
+
+                setChartData({
+                    day: fromatData(resposes[0].data),
+                    week: fromatData(resposes[1].data),
+                    year: fromatData(resposes[2].data),
+                })
+
+            }
+            catch (err) {
+                console.log(err)
+            }
+
         }
         fetchData()
-    }, [])
+    }, [symbol])
 
     return (
-        <div>StockDetailPage {symbol}</div>
+        <div>
+            {chartData && (
+                <div>
+                    <StockChart chartData={chartData} symbol={symbol} />
+                </div>
+            )}
+        </div>
     )
 }

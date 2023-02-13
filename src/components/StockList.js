@@ -21,7 +21,6 @@ export const StockList = () => {
     useEffect(() => {
         let isMounted = true
         const fetchData = async () => {
-            const responses = []
             try {
                 const responses = await Promise.all(
                     watchList.map((stock) => {
