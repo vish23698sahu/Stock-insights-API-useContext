@@ -77,7 +77,6 @@ export const AutoComplete = () => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 ></input>
-                {/* <label htmlFor="search" >Search</label> */}
                 {renderDropdown()}
             </div>
 

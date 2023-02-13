@@ -1,5 +1,4 @@
 import axios from "axios";
-// const myTOKEN = process.env.TOKEN
 const TOKEN = "cfk99thr01qvg1mctmr0cfk99thr01qvg1mctmrg"
 
 
